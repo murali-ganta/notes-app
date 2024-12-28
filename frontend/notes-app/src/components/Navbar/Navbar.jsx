@@ -5,8 +5,8 @@ import { ProfileInfo } from "../Cards/ProfileInfo";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../SearchBar/SearchBar";
 
-const Navbar = ({ userInfo }) => {
-  const [serachQuery, setSearchQuery] = useState("");
+const Navbar = ({ userInfo, onSearchNote, handleClearSearch }) => {
+  const [searchQuery, setSearchQuery] = useState("");
 
   const navigate = useNavigate();
 
@@ -15,10 +15,15 @@ const Navbar = ({ userInfo }) => {
     navigate("/login");
   };
 
-  const handleSearch = () => {};
+  const handleSearch = () => {
+    if (searchQuery) {
+      onSearchNote(searchQuery);
+    }
+  };
 
   const onClearSearch = () => {
     setSearchQuery("");
+    handleClearSearch();
   };
 
   return (
@@ -26,7 +31,7 @@ const Navbar = ({ userInfo }) => {
       <h2 className="text-xl font-medium text-black py-2">Notes</h2>
 
       <SearchBar
-        value={serachQuery}
+        value={searchQuery}
         onChange={({ target }) => {
           setSearchQuery(target.value);
         }}

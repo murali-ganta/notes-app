@@ -327,6 +327,42 @@ app.put(
   }
 );
 
+// Search Notes
+app.get("/search-notes/", authenticationToken, async (req, res) => {
+  const { user } = req.user;
+  const { query } = req.query;
+
+  // Query Parameters validation
+  if (!query) {
+    return res
+      .status(400)
+      .json({ error: true, message: "Search query is required" });
+  }
+
+  try {
+    // Find Query
+    const matchingNotes = await Note.find({
+      userId: user._id,
+      $or: [
+        { title: { $regex: new RegExp(query, "i") } },
+        { content: { $regex: new RegExp(query, "i") } },
+      ],
+    });
+
+    return res.json({
+      // Success Message
+      error: false,
+      notes: matchingNotes,
+      message: "Notes matching the search query retrieved successfully",
+    });
+  } catch (error) {
+    // Error Message
+    return res
+      .status(500)
+      .json({ error: true, message: "Inernal Server Error" });
+  }
+});
+
 app.listen(8000);
 
 module.exports = app;
