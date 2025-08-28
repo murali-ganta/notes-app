@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 mongoose.connect(config.connectionString);
 
 // Models import
+const bcrypt = require("bcrypt");
 const User = require("./models/user.model");
 const Note = require("./models/note.model");
 
@@ -60,11 +61,15 @@ app.post("/create-account", async (req, res) => {
     });
   }
 
+  // Hash the password before saving
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+
   // Creation of NewUser if user is not available
   const user = new User({
     fullName,
     email,
-    password,
+    password: hashedPassword,
   });
 
   // Saving the NewUser details to DB - save() method.
@@ -104,7 +109,8 @@ app.post("/login", async (req, res) => {
   }
 
   // Verifies the provided credentials with DB User Credentials
-  if (userInfo.email == email && userInfo.password == password) {
+  const isMatch = await bcrypt.compare(password, userInfo.password);
+  if (isMatch) {
     const user = { user: userInfo };
     const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
       expiresIn: "36000m",
@@ -120,7 +126,6 @@ app.post("/login", async (req, res) => {
   } else {
     // Error Message
     return res.status(400).json({
-      error: true,
       message: "Invalid Credentials",
     });
   }
